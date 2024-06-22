@@ -1,7 +1,7 @@
 const { Cliente } = require('../../../models/Cliente.js');
 const { Dependente } = require('../../../models/Dependente.js');
 const { updateStatus, logConversation, updateCampo } = require('../../../functions/auxiliarFunctions.js');
-const { formatarNome, formatarData, removerEspeciais, getFirstName, minusculo } = require("../../../functions/formatarCampos.js")
+const { formatarNome, formatarData, removerEspeciais, getFirstName, extrairNumeros } = require("../../../functions/formatarCampos.js")
 const { validarEmail, isValidDate, verificarNomeCompleto } = require("../../../functions/validarCampos.js")
 const { MessageMedia } = require('whatsapp-web.js');
 const path = require('path');
@@ -391,7 +391,7 @@ const processResponse = async (client, cli, response, reply) => {
 
         await cli.sendMessage(client.telefone, media, { caption: caption });
         
-        cli.sendMessage(client.telefone, `Avalie sua experiência na ${client.loja}, é só digitar um número de 1 a 5:\n\n5 - 😁 Muito Bom!\n4 - 🙂 Bom\n3 - 😐 Médio\n2 - 😒 Ruim\n1 - 😤 Muito Ruim`);
+        cli.sendMessage(client.telefone, `Avalie sua experiência na loja ${client.loja}, é só digitar um número de 1 a 5:\n\n5 - 😁 Muito Bom!\n4 - 🙂 Bom\n3 - 😐 Médio\n2 - 😒 Ruim\n1 - 😤 Muito Ruim`);
         await updateStatus(client.codigo_chave, 'Aguardando resposta de avaliação');
         
         break;

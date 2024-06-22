@@ -14,29 +14,15 @@ const updateStatus = async (codigo_chave, status) => {
   })
 };
 
-const updateCampo = async (codigo_chave, campo) => {
-  console.log(`Atulizando cliente: ${codigo_chave}\Campo: ${campo}`);
-  const pegaClienteBanco = await Cliente.query().findById(codigo_chave);
-
-  if(!pegaClienteBanco){
-    throw "Cliente nao encontrado!"
-  }
-
-  await pegaClienteBanco.$query().patchAndFetch({
-    camposelecionado: campo
-  })
-};
-
-const logConversation = async (codigo_chave, message) => {
-  await db('conversas').insert({
-    codigo_chave,
+const logConversation = async (phone , message, state) => {
+  await db('bb_conversas').insert({
+    telefone: phone,
     mensagem: message,
-    data: new Date()
+    status: state
   });
 };
 
 module.exports = {
   updateStatus,
   logConversation,
-  updateCampo,
 };

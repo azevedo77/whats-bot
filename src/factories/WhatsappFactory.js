@@ -33,7 +33,7 @@ class WhatsappFactory {
             MessageHandler.sendMessage(client, to, content);
           });
         }
-        else if (clientData.fluxo === '2' && clientData.codigo_chave === '1874299') {
+        else if (clientData.fluxo === '2' ) {
           await flowTwo.start(clientData, (to, content) => {
             MessageHandler.sendMessage(client, to, content);
           });

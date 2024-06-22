@@ -1,7 +1,7 @@
 const { Cliente } = require('../../../models/Cliente.js');
 const { Dependente } = require('../../../models/Dependente.js');
 const { updateStatus, logConversation, updateCampo } = require('../../../functions/auxiliarFunctions.js');
-const { formatarNome, formatarData, removerEspeciais, getFirstName, minusculo } = require("../../../functions/formatarCampos.js")
+const { formatarNome, formatarData, removerEspeciais, getFirstName, extrairNumeros } = require("../../../functions/formatarCampos.js")
 const { validarEmail, isValidDate, verificarNomeCompleto } = require("../../../functions/validarCampos.js")
 const { MessageMedia } = require('whatsapp-web.js');
 const path = require('path');

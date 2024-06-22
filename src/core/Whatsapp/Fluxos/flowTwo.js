@@ -1,13 +1,13 @@
 const { Cliente } = require('../../../models/Cliente.js');
 const { Dependente } = require('../../../models/Dependente.js');
 const { updateStatus, logConversation, updateCampo } = require('../../../functions/auxiliarFunctions.js');
-const { formatarNome, formatarData, removerEspeciais, getFirstName, minusculo } = require("../../../functions/formatarCampos.js")
+const { formatarNome, formatarData, removerEspeciais, getFirstName, extrairNumeros } = require("../../../functions/formatarCampos.js")
 const { validarEmail, isValidDate, verificarNomeCompleto } = require("../../../functions/validarCampos.js")
 const { MessageMedia } = require('whatsapp-web.js');
 const path = require('path');
 
 const start = async (client, sendMessage) => {
-  sendMessage(client.telefone,`Olá, ${getFirstName(formatarNome(client.nome))}!\nAqui é da Bibi ${client.loja}, ficamos muito felizes com a sua visita! 🧡\n\nInformamos que sua compra gerou um bônus aqui na loja e para ativar na próxima compra precisamos confirmar alguns dados. Vamos começar?\n\nDigite o número da opção:\n*1* - Sim\n*2* - Não\n\nObs.: Prometo que é rapidinho, leva menos de 1 minuto ☺️`);
+  sendMessage(client.telefone,`Olá, ${getFirstName(formatarNome(client.nome))}!\nAqui é da loja Bibi ${client.loja}, ficamos muito felizes com a sua visita! 🧡\n\nVocê ganhou até *R$ ${client.valorgb}* para usar na sua próxima compra.\n\nConfirme seus dados para ativar:\n\n*1* - Sim\n*2* - Não\n\nDigite o número da opção`);
     await updateStatus(client.codigo_chave, 'Aguardando confirmação de continuidade');
 
     // await logConversation(client.codigo_chave, 'Início do fluxo 1.');
@@ -16,12 +16,12 @@ const start = async (client, sendMessage) => {
 const processResponse = async (client, cli, response, reply) => {
 
   switch (client.ultimoestado) {
-    case 'Aguardando resposta de avaliação':
+    case 'Aguardando resposta de avaliação': 
         /*
         GRAVAR NPS NO BANCO AQUI
         */
         if (parseInt(extrairNumeros(response)) >= 1 && parseInt(extrairNumeros(response)) <= 5) {
-            reply('Obrigado, até logo! 🧡');
+            reply('Obrigada, até logo! 🧡');
             await updateStatus(client.codigo_chave, 'Finalizado');
             // await logConversation(client.codigo_chave, response);
         } else {
@@ -32,7 +32,7 @@ const processResponse = async (client, cli, response, reply) => {
 
     case 'Aguardando confirmação de continuidade':
       if (extrairNumeros(response) == '1') {
-        reply(`Ótimo! Esses são seus dados cadastrados:\n\n*1* - Nome Completo: ${formatarNome(client.nome)}\n*2* - Data de Nascimento: ${formatarData(client.data_nascimento)}\n*3* - Endereço de Email: ${client.email.toLowerCase()}\n\nSe alguma informação estiver incorreta, informe o número correspondente para ajustar.\nOu então *"OK"* para prosseguir ☺️`);
+        reply(`Ótimo! Esses são seus dados cadastrados:\n\n*1* - Nome Completo: ${formatarNome(client.nome)}\n*2* - Data de Nascimento: ${formatarData(client.data_nascimento)}\n*3* - Endereço de Email: ${client.email.toLowerCase()}\n\nSe alguma informação estiver incorreta, digite o número correspondente para ajustar ou *"OK"* para continuar ☺️`);
         await updateStatus(client.codigo_chave, 'Aguardando atualização de dados');
       } else if (extrairNumeros(response) == '2') {
         reply('Você digitou NÃO 😔 tem certeza de sua resposta?\n*1* – Sim, não desejo confirmar meus dados\n*2* – Quero ativar meu bônus');
@@ -48,7 +48,7 @@ const processResponse = async (client, cli, response, reply) => {
         reply('Ah que pena... Até a próxima 😊');
         await updateStatus(client.codigo_chave, 'Saiu');
       } else if (extrairNumeros(response) == '2') {
-        reply(`Ótimo! Esses são seus dados cadastrados:\n\n*1* - Nome Completo: ${formatarNome(client.nome)}\n*2* - Data de Nascimento: ${formatarData(client.data_nascimento)}\n*3* - Endereço de Email: ${client.email.toLowerCase()}\n\nSe alguma informação estiver incorreta, informe o número correspondente para ajustar. Ou então *"OK"* para prosseguir ☺️`);
+        reply(`Ótimo! Esses são seus dados cadastrados:\n\n*1* - Nome Completo: ${formatarNome(client.nome)}\n*2* - Data de Nascimento: ${formatarData(client.data_nascimento)}\n*3* - Endereço de Email: ${client.email.toLowerCase()}\n\nSe alguma informação estiver incorreta, digite o número correspondente para ajustar. Ou então *"OK"* para prosseguir ☺️`);
         await updateStatus(client.codigo_chave, 'Aguardando atualização de dados');
       } else {
         reply('Desculpe, não entendi sua resposta. Por favor, responda novamente.');
@@ -62,7 +62,7 @@ const processResponse = async (client, cli, response, reply) => {
         await updateStatus(client.codigo_chave, 'Atualizando Nome');
 
       } else if (extrairNumeros(response) == '2') {
-        reply('Certo, digite a informação correta para *data de nascimento* no formato de exemplo: 24/12/2023:');
+        reply('Certo, digite a informação correta para *data de nascimento* no formato de exemplo: 24/12/2023');
         await updateStatus(client.codigo_chave, 'Atualizando Data de Nascimento');
 
       } else if (extrairNumeros(response) == '3') {
@@ -96,7 +96,7 @@ const processResponse = async (client, cli, response, reply) => {
               reply(`Aqui estão seus dados atualizados:\n\n*1* - Nome: ${formatarNome(clienteAtualizado.nome)}\n*2* - Data de Nascimento: ${formatarData(clienteAtualizado.data_nascimento)}\n*3* - Email: ${clienteAtualizado.email.toLowerCase()}\n\nDigite o *número do campo* para atualizar ou digite *"OK"* ☺️`);
               await updateStatus(client.codigo_chave, 'Aguardando atualização de dados');
             } else {
-              reply('Por favor, informe nome e sobrenome')
+              reply('Por favor, digite nome e sobrenome')
             }
             
             // await logConversation(client.codigo_chave, `Nome atualizado para: ${response}`);
@@ -113,7 +113,7 @@ const processResponse = async (client, cli, response, reply) => {
                 await updateStatus(client.codigo_chave, 'Aguardando atualização de dados');
                 // await logConversation(client.codigo_chave, `Email atualizado para: ${response}`);
             } else {
-                reply('⚠️ Email inválido. Por favor, informe um email válido. Exemplo: email@gmail.com')
+                reply('⚠️ Email inválido. Por favor, digite um email válido. Exemplo: email@gmail.com')
             }
             
         }
@@ -138,7 +138,7 @@ const processResponse = async (client, cli, response, reply) => {
 
     case 'Gerenciando Dependentes':
       if (extrairNumeros(response) == '1') {
-        reply('Informe *nome e sobrenome* do dependente:');
+        reply('Digite *nome e sobrenome* do dependente:');
         await updateStatus(client.codigo_chave, 'Cadastrando Dependente Nome');
 
       } else if (extrairNumeros(response) == '2') {
@@ -158,11 +158,14 @@ const processResponse = async (client, cli, response, reply) => {
       } else if (removerEspeciais(response.toLowerCase()) === 'ok') {
             const dependents = await Dependente.query().where({ codigo_chave: client.codigo_chave });
 
-            let message = `Obrigado 🤩 aqui estão seus dados atualizados:\n\n*Nome:* ${formatarNome(client.nome)}\n*Data de Nascimento:* ${formatarData(client.data_nascimento)}\n*Email:* ${client.email.toLowerCase()}\n\n*Dependentes:*\n\n`
+            let message = `Obrigada 🤩 aqui estão seus dados atualizados:\n\n*Nome:* ${formatarNome(client.nome)}\n*Data de Nascimento:* ${formatarData(client.data_nascimento)}\n*Email:* ${client.email.toLowerCase()}\n\n`
 
-            dependents.forEach((dep) => {
+            if (dependents.length > 0) {
+              message += `*Dependentes:*\n\n`
+              dependents.forEach((dep) => {
                 message += `*${formatarNome(dep.nome)}*\n- Relação: ${dep.relacao.toLowerCase()}\n- Data de Nascimento: ${formatarData(dep.data_nascimento)}\n\n`
-            })
+              })
+            }            
             
             message += 'Digite *"OK"* para finalizar!'
             reply(message);
@@ -217,7 +220,7 @@ const processResponse = async (client, cli, response, reply) => {
             reply(message);
             await updateStatus(client.codigo_chave, 'Gerenciando Dependentes');
         } else {
-            reply('⚠️ Por favor, informe *nome e sobrenome*')
+            reply('⚠️ Por favor, digite *nome e sobrenome*')
         }
         
     }
@@ -267,7 +270,7 @@ const processResponse = async (client, cli, response, reply) => {
             await updateStatus(client.codigo_chave, 'Cadastrando Dependente Relacao');
             // await logConversation(client.codigo_chave, `Nome do dependente cadastrado: ${response}`);
         } else {
-            reply('⚠️ Por favor, informe *nome e sobrenome*')
+            reply('⚠️ Por favor, digite *nome e sobrenome*')
         }
         
     }
@@ -337,22 +340,26 @@ const processResponse = async (client, cli, response, reply) => {
         reply('Desculpe, não entendi sua resposta. Por favor, responda novamente.');
         }
         await updateStatus(client.codigo_chave, 'Gerenciando Dependentes');
-        break;
+        break; 
           
     case 'Finalizar':
-        const caption = `Ebaaa!! Seu bônus de R$ ${client.valorgb} foi ativado aqui na Bibi ${client.loja}\nVálido até ${formatarData(client.datagb)} 🥳`
+        const caption = `Ebaaa!!\nSeu bônus de até *R$ ${client.valorgb}* estará liberado a partir do dia *${formatarData(client.datainigb)} até ${formatarData(client.datafimgb)}*.\nVálido apenas na loja Bibi ${client.loja} 🥳`
 
-        const imagePath = path.resolve(__dirname, '../../../assets/images/comemoracao.png');
+        const imagePath = path.resolve(__dirname, '../../../assets/images/final.png');
         const media = MessageMedia.fromFilePath(imagePath);
 
         await cli.sendMessage(client.telefone, media, { caption: caption });
-        
-        cli.sendMessage(client.telefone, `Avalie sua experiência na ${client.loja}, é só digitar um número de 1 a 5:\n\n5 - 😁 Muito Bom!\n4 - 🙂 Bom\n3 - 😐 Médio\n2 - 😒 Ruim\n1 - 😤 Muito Ruim`);
-        await updateStatus(client.codigo_chave, 'Aguardando resposta de avaliação');
-        
+
+        setTimeout(async () => {
+          cli.sendMessage(client.telefone, `Para finalizar, nos conte como foi seu *atendimento na loja Bibi ${client.loja}*?\n\n*5* - 😁 Muito Bom!\n*4* - 🙂 Bom\n*3* - 😐 Médio\n*2* - 😒 Ruim\n*1* - 😤 Muito Ruim`);
+          await updateStatus(client.codigo_chave, 'Aguardando resposta de avaliação');
+        }, 2000)
         break;
     default: 
-        
+        if (client.codigo_chave === '164993') {
+          sendMessage(client.telefone,`Olá, ${getFirstName(formatarNome(client.nome))}!\nAqui é da loja Bibi ${client.loja}, ficamos muito felizes com a sua visita! 🧡\n\nVocê ganhou até *R$ ${client.valorgb}* para usar na sua próxima compra.\n\nConfirme seus dados para ativar:\n\n*1* - Sim\n*2* - Não\n\nDigite o número da opção`);
+          await updateStatus(client.codigo_chave, 'Aguardando confirmação de continuidade');
+        }
       break;
   } 
 };
